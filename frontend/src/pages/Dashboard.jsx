@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import contactIMG from "../assets/contact-book.png";
-
-const API_URL = "http://localhost:4000/api/contacts"; // Backend API
+import { getContacts } from "../services/contactService"; // Import from contactService
+import Navbar from "../components/navbar/Navbar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,19 +19,9 @@ const Dashboard = () => {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/"); // Redirect to login if no token
-        return;
-      }
-
-      const response = await axios.get(API_URL, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("API response for Contacts:", response.data);
-      // Assuming API returns { myContacts: [], sharedContacts: [] }
-      setMyContacts(response.data.contacts || []);
-      setSharedContacts(response.data.sharedContacts || []);
+      const contactsData = await getContacts(); // Use contactService here
+      setMyContacts(contactsData.contacts || []);
+      setSharedContacts(contactsData.sharedContacts || []);
     } catch (error) {
       console.error("Error fetching contacts:", error);
       setError("Failed to fetch contacts. Please try again.");
@@ -42,33 +30,24 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+  const handleCreateContact = () => {
+    navigate("/phonebook");
   };
 
   return (
     <div className="h-screen bg-gray-100">
       {/* Navbar */}
-      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <img src={contactIMG} alt="Logo" className="h-10" />
-          <h1 className="text-2xl font-bold text-gray-800 ml-3">Contactopia</h1>
-        </div>
-        <div className="flex items-center space-x-4">
-          <img
-            src={contactIMG}
-            alt="Profile"
-            className="w-10 h-10 rounded-full"
-          />
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+      <Navbar />
+
+      {/* Create Contact Button */}
+      <div className="px-6 py-4 flex justify-end">
+        <button
+          onClick={handleCreateContact}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Create Contact
+        </button>
+      </div>
 
       {/* Main Content */}
       <div className="p-6">

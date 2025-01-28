@@ -13,7 +13,7 @@ const Login = () => {
     console.log("Login attempt:", { email, password });
     try {
       const response = await login({ email, password });
-      console.log("API response:", response);
+      //   console.log("API response:", response);
       // Uncomment this to store the token
       localStorage.setItem("token", response.token);
 

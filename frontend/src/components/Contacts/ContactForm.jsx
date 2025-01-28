@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { ContactContext } from "../../context/ContactContext";
 
-const ContactForm = () => {
+const ContactForm = ({ refreshContacts }) => {
   const [contact, setContact] = useState({
     firstName: "",
     lastName: "",
@@ -9,12 +9,20 @@ const ContactForm = () => {
     email: "",
   });
 
+  // Access createContact from ContactContext
   const { createContact } = useContext(ContactContext);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    createContact(contact);
-    setContact({ firstName: "", lastName: "", contactNumber: "", email: "" });
+    console.log("contact ", contact);
+    try {
+      // Now createContact is correctly referenced from context
+      await createContact(contact);
+      setContact({ firstName: "", lastName: "", contactNumber: "", email: "" });
+      refreshContacts(); // Refresh the contact list after adding
+    } catch (error) {
+      console.error("Error creating contact:", error);
+    }
   };
 
   return (
