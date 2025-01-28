@@ -4,10 +4,21 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/users");
 const contactRoutes = require("./routes/contacts");
+const cors = require("cors");
 
-// create express app
 const app = express();
 
+// Basic CORS setup
+app.use(cors());
+
+// Optionally, configure specific origins or methods
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Frontend URL
+    methods: "GET,POST,PUT,DELETE", // Allowed HTTP methods
+    allowedHeaders: "Content-Type,Authorization", // Allowed headers
+  })
+);
 // middleware
 app.use(express.json());
 app.use((req, res, next) => {

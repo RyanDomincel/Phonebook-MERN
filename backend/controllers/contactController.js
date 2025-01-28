@@ -1,87 +1,76 @@
 const Contact = require("../models/contactModel");
 
-// GET all Contacts regardless
-const getAllContacts = async (req, res) => {
+// Get all contacts for the logged-in user (including shared ones)
+const getAllContactsForUser = async (req, res) => {
   try {
-    const contacts = await Contact.find();
-    res.status(200).json(contacts);
+    const userId = req.user._id; // Extract from token
+
+    // Fetch contacts owned by the user or shared with them
+    const contacts = await Contact.find({
+      userId,
+    });
+    const sharedContacts = await Contact.find({
+      sharedWith: userId,
+    });
+    res.status(200).json({ contacts, sharedContacts });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching contacts", error: error.message });
   }
 };
 
-// Fetch a single contact by ID
+// Get a single contact (if user owns it or it's shared)
 const getSingleContact = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user._id;
 
-    // Validate the ID
-    if (!id) {
-      return res.status(400).json({ message: "Contact ID is required" });
-    }
+    const contact = await Contact.findOne({
+      _id: id,
+      $or: [{ userId }, { sharedWith: userId }],
+    });
 
-    // Find the contact
-    const contact = await Contact.findById(id);
-    if (!contact) {
-      return res.status(404).json({ message: "Contact not found" });
-    }
+    if (!contact) return res.status(404).json({ message: "Contact not found" });
 
     res.status(200).json(contact);
   } catch (error) {
-    console.error("Error fetching contact:", error);
     res
       .status(500)
       .json({ message: "Error fetching contact", error: error.message });
   }
 };
 
-// Get all contacts for a user
-const getAllContactforAUser = async (req, res) => {
-  try {
-    const contacts = await Contact.find({ userId: req.params.userId });
-    res.status(200).json(contacts);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Create a new contact
 const createContact = async (req, res) => {
-  const { firstName, lastName, contactNumber, email, userId } = req.body;
-
   try {
+    const { firstName, lastName, contactNumber, email } = req.body;
+    const userId = req.user._id;
     const contact = new Contact({
+      userId: userId,
       firstName,
       lastName,
       contactNumber,
       email,
-      userId,
       profilePhoto: req.file ? req.file.filename : null,
     });
 
     await contact.save();
     res.status(201).json(contact);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error creating contact", error: error.message });
   }
 };
 
-// Delete a contact
-const deleteContact = async (req, res) => {
-  try {
-    const contact = await Contact.findByIdAndDelete(req.params.id);
-    if (!contact) return res.status(404).json({ message: "Contact not found" });
-
-    res.status(200).json({ message: "Contact deleted successfully!" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Update a contact
+// Update contact (only if user owns it)
 const updateContact = async (req, res) => {
   try {
-    const contact = await Contact.findById(req.params.id);
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const contact = await Contact.findOne({ _id: id, userId });
     if (!contact) return res.status(404).json({ message: "Contact not found" });
 
     Object.assign(contact, req.body);
@@ -90,45 +79,60 @@ const updateContact = async (req, res) => {
     await contact.save();
     res.status(200).json(contact);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating contact", error: error.message });
   }
 };
 
-// Share a contact with another user
+// Delete contact (only if user owns it)
+const deleteContact = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const contact = await Contact.findOneAndDelete({ _id: id, userId });
+    if (!contact) return res.status(404).json({ message: "Contact not found" });
+
+    res.status(200).json({ message: "Contact deleted successfully!" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error deleting contact", error: error.message });
+  }
+};
+
 const shareContact = async (req, res) => {
   try {
     const { id } = req.params; // Contact ID
-    const { userId } = req.body; // User ID to share with
+    const { userId: targetUserId } = req.body; // User to share with
+    const userId = req.user?._id; // Current user (check if exists)
 
-    // Validate IDs
-    if (!id || !userId) {
-      return res
-        .status(400)
-        .json({ message: "Contact ID and User ID are required" });
+    console.log("Contact ID:", id);
+    console.log("Target User ID:", targetUserId);
+    console.log("Logged-in User ID:", userId);
+
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
     }
 
-    // Find the contact
-    const contact = await Contact.findById(id);
+    const contact = await Contact.findOne({ _id: id, userId });
+    console.log("Found Contact:", contact);
+
     if (!contact) {
-      return res.status(404).json({ message: "Contact not found" });
+      return res
+        .status(404)
+        .json({ message: "Contact not found or unauthorized" });
     }
 
-    // // Authorization check (assuming req.user is populated)
-    // if (!req.user || !contact.userId.equals(req.user.id)) {
-    //   return res
-    //     .status(403)
-    //     .json({ message: "Not authorized to share this contact" });
-    // }
-
-    // Check if the user is already in the sharedWith array
-    if (!contact.sharedWith.includes(userId)) {
-      contact.sharedWith.push(userId);
+    if (!contact.sharedWith.includes(targetUserId)) {
+      contact.sharedWith.push(targetUserId);
       await contact.save();
     }
 
     res.status(200).json({ message: "Contact shared successfully", contact });
   } catch (error) {
-    console.error("Error sharing contact:", error); // Log the error for debugging
+    console.error("Error in shareContact:", error);
     res
       .status(500)
       .json({ message: "Error sharing contact", error: error.message });
@@ -136,11 +140,10 @@ const shareContact = async (req, res) => {
 };
 
 module.exports = {
-  getAllContacts,
+  getAllContactsForUser,
   getSingleContact,
-  getAllContactforAUser,
   createContact,
-  deleteContact,
   updateContact,
+  deleteContact,
   shareContact,
 };
