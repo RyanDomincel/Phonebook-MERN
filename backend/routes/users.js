@@ -4,6 +4,7 @@ const {
   loginUser,
   signupUser,
   forgotPassword,
+  resetPassword,
   approveUser,
   getAllUsers,
   getSingleUser,
@@ -19,6 +20,9 @@ router.post("/signup", signupUser);
 
 // forgot password route
 router.post("/forgot-password", forgotPassword);
+
+// RESET a password
+router.post("/reset-password/:token", resetPassword);
 
 // approve user route
 router.patch("/approve/:id", approveUser);

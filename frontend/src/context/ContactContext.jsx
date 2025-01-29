@@ -2,6 +2,8 @@ import React, { createContext, useState } from "react";
 import {
   getContacts,
   addContact,
+  getSingleContact,
+  updateContact as updateContactService,
   deleteContact as deleteContactService,
 } from "../services/contactService";
 
@@ -12,7 +14,7 @@ export const ContactProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch contacts from the API
+  // Fetch all contacts from the API
   const fetchContacts = async () => {
     setLoading(true);
     setError(null);
@@ -26,26 +28,42 @@ export const ContactProvider = ({ children }) => {
     }
   };
 
-  // Add a new contact to the API
-  const createContact = async (contact) => {
+  // Fetch a single contact by ID
+  const fetchSingleContact = async (id) => {
     setLoading(true);
     setError(null);
     try {
-      const newContact = await addContact(contact);
-      setContacts((prevContacts) => [...prevContacts, newContact]);
+      const data = await getSingleContact(id);
+      return data; // Return specific contact data
     } catch (error) {
-      setError("Failed to add contact. Please try again.");
+      setError("Failed to fetch contact. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete a contact from the API
+  // Update an existing contact
+  const updateContact = async (id, updatedContact) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const updated = await updateContactService(id, updatedContact);
+      setContacts((prevContacts) =>
+        prevContacts.map((contact) => (contact._id === id ? updated : contact))
+      );
+    } catch (error) {
+      setError("Failed to update contact. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete a contact
   const deleteContact = async (contactId) => {
     setLoading(true);
     setError(null);
     try {
-      await deleteContactService(contactId); // Assuming this function deletes from the database
+      await deleteContactService(contactId);
       setContacts((prevContacts) =>
         prevContacts.filter((contact) => contact._id !== contactId)
       );
@@ -63,8 +81,9 @@ export const ContactProvider = ({ children }) => {
         loading,
         error,
         fetchContacts,
-        createContact,
-        deleteContact, // Provide the deleteContact function
+        fetchSingleContact,
+        updateContact,
+        deleteContact,
       }}
     >
       {children}

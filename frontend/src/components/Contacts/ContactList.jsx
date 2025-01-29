@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FaTrashAlt } from "react-icons/fa"; // For the delete icon
+import { FaTrashAlt, FaEdit } from "react-icons/fa"; // Add FaEdit for the edit icon
 import { useContext } from "react";
 import { ContactContext } from "../../context/ContactContext";
+import { useNavigate } from "react-router-dom"; // To navigate to the edit page
 
 const ContactList = ({ contacts, loading, error, refreshContacts }) => {
   const { fetchContacts, deleteContact } = useContext(ContactContext);
+  const navigate = useNavigate(); // To navigate to edit page
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
@@ -12,6 +14,10 @@ const ContactList = ({ contacts, loading, error, refreshContacts }) => {
   const handleDeleteClick = (contact) => {
     setSelectedContact(contact); // Set the contact to be deleted
     setShowConfirmation(true); // Show the confirmation dialog
+  };
+
+  const handleEditClick = (contact) => {
+    navigate(`/edit/${contact._id}`); // Navigate to edit page with contact id
   };
 
   const confirmDelete = async () => {
@@ -43,7 +49,13 @@ const ContactList = ({ contacts, loading, error, refreshContacts }) => {
                 key={contact._id}
                 className="bg-white p-4 rounded-lg shadow-md relative"
               >
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 right-2 flex space-x-2">
+                  <button
+                    onClick={() => handleEditClick(contact)}
+                    className="text-blue-500 hover:text-blue-700 bg-white hover:bg-white"
+                  >
+                    <FaEdit size={20} />
+                  </button>
                   <button
                     onClick={() => handleDeleteClick(contact)}
                     className="text-red-500 hover:text-red-700 bg-white hover:bg-white"

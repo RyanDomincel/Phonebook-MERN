@@ -28,36 +28,63 @@ const ContactForm = ({ refreshContacts }) => {
   return (
     <form onSubmit={handleSubmit}>
       <h1>Add Contact</h1>
-      <input
-        type="text"
-        placeholder="First Name"
-        value={contact.firstName}
-        onChange={(e) => setContact({ ...contact, firstName: e.target.value })}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Last Name"
-        value={contact.lastName}
-        onChange={(e) => setContact({ ...contact, lastName: e.target.value })}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Contact Number"
-        value={contact.contactNumber}
-        onChange={(e) =>
-          setContact({ ...contact, contactNumber: e.target.value })
-        }
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={contact.email}
-        onChange={(e) => setContact({ ...contact, email: e.target.value })}
-        required
-      />
+
+      <div>
+        <label htmlFor="firstName" className="block">
+          First Name
+        </label>
+        <input
+          type="text"
+          placeholder="First Name"
+          value={contact.firstName}
+          onChange={(e) =>
+            setContact({ ...contact, firstName: e.target.value })
+          }
+          className="border p-2 rounded w-full"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="lastName" className="block">
+          Last Name
+        </label>
+        <input
+          type="text"
+          placeholder="Last Name"
+          value={contact.lastName}
+          onChange={(e) => setContact({ ...contact, lastName: e.target.value })}
+          className="border p-2 rounded w-full"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="lastName" className="block">
+          Contact Number
+        </label>
+        <input
+          type="text"
+          placeholder="Contact Number"
+          value={contact.contactNumber}
+          onChange={(e) =>
+            setContact({ ...contact, contactNumber: e.target.value })
+          }
+          className="border p-2 rounded w-full"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="lastName" className="block">
+          Email
+        </label>
+        <input
+          type="email"
+          placeholder="Email"
+          value={contact.email}
+          onChange={(e) => setContact({ ...contact, email: e.target.value })}
+          className="border p-2 rounded w-full"
+          required
+        />
+      </div>
       <button type="submit">Add Contact</button>
     </form>
   );

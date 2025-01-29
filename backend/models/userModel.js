@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const crypto = require("crypto"); // For generating reset token
 
 const Schema = mongoose.Schema;
 
@@ -31,6 +32,8 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    resetPasswordToken: String, // Store the hashed token for password reset
+    resetPasswordExpires: Date, // Expiry time for reset token
   },
   { timestamps: true }
 );
@@ -38,7 +41,6 @@ const userSchema = new Schema(
 // Static signup method
 userSchema.statics.signup = async function (email, password) {
   try {
-    //validation for email
     if (!email || !password) {
       throw new Error("All fields are required");
     }
@@ -55,17 +57,13 @@ userSchema.statics.signup = async function (email, password) {
       throw new Error("A user with this email already exists");
     }
 
-    // Hash password with bcrypt
-    const salt = await bcrypt.genSalt(12); // Use a higher salt rounds for better security
+    // Hash password
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create and save the user
-    const user = new this({
-      email,
-      password: hashedPassword,
-    });
-
-    await user.save(); // Persist to the database
+    // Create user
+    const user = new this({ email, password: hashedPassword });
+    await user.save();
     return user;
   } catch (error) {
     throw new Error(error.message || "Error during signup");
@@ -74,19 +72,16 @@ userSchema.statics.signup = async function (email, password) {
 
 // Static login method
 userSchema.statics.login = async function (email, password) {
-  //validation for email
   if (!email || !password) {
     throw new Error("All fields are required");
   }
 
   const user = await this.findOne({ email });
-
   if (!user) {
     throw new Error("Incorrect email");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
-
   if (!isMatch) {
     throw new Error("Incorrect password");
   }
@@ -94,7 +89,23 @@ userSchema.statics.login = async function (email, password) {
   return user;
 };
 
-// Configure Mongoose settings (optional, can be moved elsewhere)
+// Generate Password Reset Token Method
+userSchema.methods.generatePasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Hash the token and store it in the database
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Set expiration time (e.g., 1 hour)
+  this.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
+
+  return resetToken; // Return raw token (not hashed) to send via email
+};
+
+// Configure Mongoose settings (optional)
 mongoose.set("strictQuery", true);
 
 module.exports = mongoose.model("User", userSchema);
