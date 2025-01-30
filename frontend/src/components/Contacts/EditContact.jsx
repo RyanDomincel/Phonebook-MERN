@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { ContactContext } from "../../context/ContactContext";
-import Navbar from "../navbar/Navbar";
+import NavbarComp from "../navbar/Navbar";
 
 const EditContact = () => {
   const { id } = useParams(); // Get the contact ID from the URL
@@ -60,7 +60,7 @@ const EditContact = () => {
 
   return (
     <div>
-      <Navbar />
+      <NavbarComp />
       <div className="p-6">
         <form onSubmit={handleSubmit}>
           <h1>Edit Contact</h1>

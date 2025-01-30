@@ -12,7 +12,7 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1]; // Get token from header
       const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token
       req.user = await User.findById(decoded._id).select("-password"); // Attach user object to req
-      console.log("req.user ", req.user);
+      //   console.log("req.user ", req.user);
       if (!req.user) {
         return res.status(401).json({ message: "User not found" });
       }

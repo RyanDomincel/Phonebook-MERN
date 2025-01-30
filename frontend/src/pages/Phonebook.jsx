@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getContacts } from "../services/contactService"; // Import the service
 import ContactList from "../components/Contacts/ContactList";
 import ContactForm from "../components/Contacts/ContactForm";
-import Navbar from "../components/navbar/Navbar";
+import NavbarComp from "../components/navbar/Navbar";
 
 const Phonebook = () => {
   const [contacts, setContacts] = useState([]);
@@ -30,10 +30,10 @@ const Phonebook = () => {
   return (
     <div className="h-screen bg-gray-100">
       {/* Navbar */}
-      <Navbar />
+      <NavbarComp />
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="p-6 ">
         <ContactForm refreshContacts={fetchContacts} />{" "}
         {/* Pass refreshContacts as a prop */}
         <ContactList

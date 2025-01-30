@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getContacts } from "../services/contactService"; // Import from contactService
-import Navbar from "../components/navbar/Navbar";
+import NavbarComp from "../components/navbar/Navbar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -37,17 +37,7 @@ const Dashboard = () => {
   return (
     <div className="h-screen bg-gray-100">
       {/* Navbar */}
-      <Navbar />
-
-      {/* Create Contact Button */}
-      <div className="px-6 py-4 flex justify-end">
-        <button
-          onClick={handleCreateContact}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Create Contact
-        </button>
-      </div>
+      <NavbarComp />
 
       {/* Main Content */}
       <div className="p-6">
@@ -57,10 +47,21 @@ const Dashboard = () => {
           <p className="text-red-500">{error}</p>
         ) : (
           <>
-            {/* My Contacts */}
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              My Contacts
-            </h2>
+            <div className="flex items-center justify-between">
+              {/* My Contacts */}
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                My Contacts
+              </h2>
+              {/* Create Contact Button */}
+              <div className="px-6 py-4 flex justify-end">
+                <button
+                  onClick={handleCreateContact}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Create Contact
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {myContacts.length > 0 ? (
                 myContacts.map((contact) => (
